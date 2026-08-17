@@ -244,17 +244,27 @@ forces both lines to resolve `CONNECTED` at the identical timestamp.
 
 ## Deployment
 
-Deployed as a single Render Web Service via [`render.yaml`](./render.yaml) (Blueprint). Node
-version is pinned in [`.nvmrc`](./.nvmrc) and `package.json`'s `engines` field.
+Deployed as a single Web Service on **Railway** via [`railway.json`](./railway.json) (Config as
+Code). Node version is pinned in [`.nvmrc`](./.nvmrc) and `package.json`'s `engines` field, same
+pin either platform reads.
+
+[`render.yaml`](./render.yaml) is also still in the repo and still works — the original brief
+specified Render, and this project ran there first. It moved to Railway by choice; see the note
+below on why that trade-off was made deliberately, eyes open, not by default.
 
 **State does not survive a restart, by design.** Every `Lead`/`DialerSession`/`Call`/`CRMActivity`
 lives only in this process's memory — there's no database and no writable disk dependency. A
-redeploy, a crash, or (on Render's free tier) the service spinning down after 15 minutes of
-inactivity all wipe every session and CRM record back to just the 6 seeded leads. This is the
-brief's explicit "in-memory state" requirement, not an accident — see `NOTES.md` for what would
-change if this needed to survive a restart.
+redeploy, a crash, or the platform stopping the container for any reason all wipe every session
+and CRM record back to just the 6 seeded leads. This is the brief's explicit "in-memory state"
+requirement, not an accident — see `NOTES.md` for what would change if this needed to survive a
+restart.
 
-**Free tier cold start**: the free plan spins the service down after ~15 minutes idle. The first
-request after that takes 30-60 seconds to respond while it spins back up — expect the first page
-load to hang, not error. If you're coming back to re-test after a break, that first load being slow
-is expected, not a bug; give it a minute and reload.
+**Free-tier caveat — read this before assuming the deployed link is dead.** Railway's free tier is
+not an ongoing free tier the way Render's is: new signups get a one-time $5 credit good for 30
+days or until spent, whichever comes first. Once that runs out, Railway's own docs say plainly
+that it **stops the container** — not a cold-start sleep-and-wake like Render/Heroku, an actual
+shutdown until the project is upgraded to a paid plan (Hobby, $5/mo, requires a card on file).
+**If the deployed Railway link is unreachable, that's most likely the trial credit having run out
+or expired, not a bug in the app** — clone and run it locally (`npm install && npm run dev`), or
+ask for the trial/plan to be renewed. This is the one thing worth flagging to a reviewer up front,
+since a fully-down link reads very differently from a slow one.

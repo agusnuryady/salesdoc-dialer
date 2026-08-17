@@ -53,11 +53,16 @@ would ask about it, not because it's on fire.
 
 ## Process / deliverable gaps (carried over from the earlier code review, still open)
 
-- **No README.** `config.ts`'s env vars (notably `DIALER_GUARANTEED_CONNECT_INDEX`, which defaults
-  to forcing every session's first dial to connect) are undocumented anywhere a reviewer would
-  find them without reading source.
-- **Not deployed.** No `render.yaml`, no deployment attempted. The brief's "single Render Web
-  Service" requirement is unmet.
+- **Deployed on Railway, not Render — deliberate deviation from the brief.** The original brief
+  said "single Render Web Service"; `render.yaml` is still in the repo and still works, but the
+  actual deployment target was switched to Railway by explicit choice, after being shown the
+  trade-off: Railway's free tier is a one-time $5/30-day trial, not an ongoing free tier, and the
+  container **stops entirely** (not a cold-start sleep) once that runs out, requiring a card and a
+  paid Hobby plan to keep it alive past that window. Render's free tier has no such expiry — it
+  was the safer choice for "reachable on an unknown grading timeline" and was already fully built
+  and verified before this switch. If the deployed link is down when reviewed, this trade-off —
+  not a bug — is almost certainly why; see README.md's Deployment section for the reviewer-facing
+  version of this note.
 - **Git history is reconstructed, not real.** The repository at
   github.com/agusnuryady/salesdoc-dialer has 6 commits grouped by concern (scaffold → domain core →
   CRM/API → frontend → tests → plan), assembled after the fact from final file states — not actual

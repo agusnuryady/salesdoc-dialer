@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: salesdoc-dialer
+    runtime: node
+    plan: free
+    # Node version comes from .nvmrc (also mirrored in package.json's
+    # "engines" field) — not repeated here as a NODE_VERSION env var, so
+    # there's exactly one place to update it.
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    # Render injects PORT into the container at runtime — do NOT set it here,
+    # that would override Render's own value with a static one. `npm start`
+    # runs `next start -p ${PORT:-3000} -H 0.0.0.0`, so it picks up whatever
+    # Render assigns and binds to all interfaces (required — binding to
+    # localhost/127.0.0.1 would make the service unreachable from outside
+    # the container).
+    healthCheckPath: /api/leads
+    # No envVars section: config.ts's defaults (seed, ring/talk delays,
+    # outcome weights, the guaranteed-early-connect demo scenario) are
+    # already what you want running here. Override any DIALER_* var from
+    # the Render dashboard's Environment tab if you ever need to — see the
+    # env var reference table in README.md. Nothing in this app needs a
+    # persistent disk or a database URL; every DialerSession/Call/CRMActivity
+    # lives only in this process's memory (see README.md's Deployment note).

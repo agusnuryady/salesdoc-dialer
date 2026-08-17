@@ -14,7 +14,6 @@ export interface SimulatedProviderConfig {
 export class SimulatedProvider implements TelephonyProvider {
   private readonly rng: Rng;
   private dialCount = 0;
-  private readonly canceledProviderCallIds = new Set<string>();
 
   constructor(private readonly config: SimulatedProviderConfig) {
     this.rng = createRng(config.seed);
@@ -46,11 +45,9 @@ export class SimulatedProvider implements TelephonyProvider {
     };
   }
 
-  cancel(providerCallId: string): void {
-    this.canceledProviderCallIds.add(providerCallId);
-  }
-
-  isCanceled(providerCallId: string): boolean {
-    return this.canceledProviderCallIds.has(providerCallId);
+  cancel(): void {
+    // No-op: a real provider would tell the carrier to drop the line here.
+    // The simulated one has nothing to notify — the engine is already
+    // authoritative about the call being over the moment it calls this.
   }
 }

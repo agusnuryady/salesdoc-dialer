@@ -15,7 +15,6 @@ export interface ScriptedDialEntry {
  */
 export class ScriptedProvider implements TelephonyProvider {
   private index = 0;
-  readonly canceledProviderCallIds = new Set<string>();
 
   constructor(private readonly schedule: ScriptedDialEntry[]) {}
 
@@ -33,7 +32,9 @@ export class ScriptedProvider implements TelephonyProvider {
     };
   }
 
-  cancel(providerCallId: string): void {
-    this.canceledProviderCallIds.add(providerCallId);
+  cancel(): void {
+    // No-op — nothing in these tests asserts on cancellation having been
+    // requested at the provider level; they assert on the resulting Call
+    // and DialerSession state instead.
   }
 }

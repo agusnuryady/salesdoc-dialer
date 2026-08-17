@@ -30,12 +30,19 @@ export function SessionScreen({
     if (session.status === 'STOPPED') return;
 
     let cancelled = false;
+    // setInterval doesn't wait for the previous tick's fetch to resolve
+    // before firing the next one. Under a slow response, an older request
+    // can resolve after a newer one already landed and silently overwrite
+    // fresher state with stale data — this counter makes that impossible by
+    // discarding any response that isn't from the most recently issued poll.
+    let latestRequestId = 0;
     const interval = setInterval(async () => {
+      const requestId = ++latestRequestId;
       try {
         const res = await fetch(`/api/dialer-sessions/${sessionId}`);
         if (!res.ok) return;
         const data = (await res.json()) as SessionView;
-        if (!cancelled) setSession(data);
+        if (!cancelled && requestId === latestRequestId) setSession(data);
       } catch {
         // Transient network hiccup — the next poll will retry.
       }
@@ -47,11 +54,15 @@ export function SessionScreen({
     };
   }, [sessionId, session.status]);
 
-  // Independent 1s clock so elapsed-time displays tick smoothly between polls.
+  // Independent 1s clock so elapsed-time displays tick smoothly between
+  // polls. Stops once STOPPED — every remaining call has a fixed endedAt by
+  // then, so a live "now" has nothing left to drive and would just force a
+  // wasted re-render every second on a screen nobody's watching count up.
   useEffect(() => {
+    if (session.status === 'STOPPED') return;
     const clock = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(clock);
-  }, []);
+  }, [session.status]);
 
   async function handleStop() {
     setStopping(true);

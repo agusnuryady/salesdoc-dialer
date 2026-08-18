@@ -42,6 +42,11 @@ export interface DialerSession {
   id: string;
   agentId: string;
   leadQueue: string[];
+  /**
+   * Fixed at 2 by the Part 1 brief — a literal constant, not a capacity or
+   * pacing setting. Not evidence toward V2's capacity-aware dialing
+   * capability: see NOTES.md "How this maps to V2".
+   */
   concurrency: 2;
   activeCallIds: string[];
   winnerCallId: string | null;
